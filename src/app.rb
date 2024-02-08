@@ -1,7 +1,7 @@
 class App < Sinatra::Base
 
 
-    @loggedin = 1
+    
 
     def db
         if @db == nil
@@ -22,6 +22,22 @@ class App < Sinatra::Base
 
 
         erb :register
+    end
+
+    post '/register' do
+        @loggedin = 1
+        userid = @loggedin
+        
+        type = params['type']
+        weight = params['weight']
+        location = params['location']
+        time = params['time']
+        fishid = db.execute('SELECT id FROM fish WHERE type = ?', type )['id'].first
+        query = 'INSERT INTO catch (userid, weight, location, time, fishid) VALUES (?, ?, ?, ?, ?) RETURNING id'
+        p userid, weight, location, time, fishid
+        db.execute(query, userid, weight, location, time, fishid).first
+        redirect '/'
+
     end
 
     
