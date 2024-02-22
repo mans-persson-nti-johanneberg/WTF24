@@ -24,6 +24,25 @@ class App < Sinatra::Base
         erb :register
     end
 
+    get '/profile/:username' do |username|
+        @username = username
+        p @username
+        @id = db.execute('SELECT id FROM users WHERE username LIKE ?', username).first['id']
+        @topfish = db.execute('WITH RankedFish AS (
+            SELECT *,
+                ROW_NUMBER() OVER (PARTITION BY fishid ORDER BY weight DESC) AS row_num
+            FROM catch
+            WHERE userid = ?
+            )
+            SELECT * FROM RankedFish WHERE row_num = 1;', @id
+        )
+        p @topfish 
+        
+        
+
+        erb :profile
+    end
+
     post '/register' do
         @loggedin = 1
         userid = @loggedin
@@ -32,10 +51,10 @@ class App < Sinatra::Base
         weight = params['weight']
         location = params['location']
         time = params['time']
-        fishid = db.execute('SELECT id FROM fish WHERE type = ?', type )['id'].first
-        query = 'INSERT INTO catch (userid, weight, location, time, fishid) VALUES (?, ?, ?, ?, ?) RETURNING id'
+        fishid = db.execute('SELECT id FROM fish WHERE type = ?', type ).first['id']
         p userid, weight, location, time, fishid
-        db.execute(query, userid, weight, location, time, fishid).first
+        query = 'INSERT INTO catch (userid, weight, location, time, fishid) VALUES (?, ?, ?, ?, ?) RETURNING id'
+        result = db.execute(query, userid, weight, location, time, fishid).first
         redirect '/'
 
     end
