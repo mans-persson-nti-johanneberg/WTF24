@@ -1,7 +1,5 @@
+require "debug"
 class App < Sinatra::Base
-
-
-    
 
     def db
         if @db == nil
@@ -18,28 +16,46 @@ class App < Sinatra::Base
     end
 
     get '/register' do
-        
-
-
         erb :register
     end
 
     get '/profile/:username' do |username|
-        @username = username
-        p @username
-        @id = db.execute('SELECT id FROM users WHERE username LIKE ?', username).first['id']
-        @topfish = db.execute('WITH RankedFish AS (
-            SELECT *,
-                ROW_NUMBER() OVER (PARTITION BY fishid ORDER BY weight DESC) AS row_num
-            FROM catch
-            WHERE userid = ?
-            )
-            SELECT * FROM RankedFish WHERE row_num = 1;', @id
-        )
-        p @topfish 
-        
+         @username = username
+         p @username
+
+        @ordered_catch = db.execute('SELECT * FROM catch 
+        INNER JOIN fish
+        ON catch.fishid = fish.id
+        WHERE userid = 1
+        ORDER BY weight DESC')
+        @key = @ordered_catch.group_by {|x| x["type"]}
+        p @key
         
 
+
+        #  @id = db.execute('SELECT id FROM users WHERE username LIKE ?', username).first['id']
+    
+        #  @orderedfish = db.execute('SELECT * FROM catch ORDER BY weight DESC')
+        
+       
+       
+       
+       
+       
+        # # @topfish = db.execute('WITH RankedFish AS (
+        # #     SELECT *,
+        # #         ROW_NUMBER() OVER (PARTITION BY fishid ORDER BY weight DESC) AS row_num
+        # #     FROM catch
+        # #     WHERE userid = ?
+        # #     )
+        # #     SELECT * FROM RankedFish WHERE row_num = 1;', @id
+        # # )
+        
+        
+        
+        
+        p "wut"
+        "wat"
         erb :profile
     end
 

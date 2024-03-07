@@ -3,6 +3,7 @@
 
 source 'https://rubygems.org'
 
+gem "debug"
 gem 'thin'
 gem 'sinatra'
 gem 'rerun'
