@@ -19,6 +19,13 @@ class App < Sinatra::Base
         erb :register
     end
 
+    get '/login' do
+        erb :login
+    end
+
+    get '/registeracc'
+        erb :regacc
+    end
     get '/profile/:username' do |username|
          @username = username
          p @username
@@ -28,9 +35,9 @@ class App < Sinatra::Base
         ON catch.fishid = fish.id
         WHERE userid = 1
         ORDER BY weight DESC')
-        @key = @ordered_catch.group_by {|x| x["type"]}
-        p @key
-        
+        @catches = @ordered_catch.group_by {|x| x["type"]}
+        @catch_key = @catches.keys  
+        p @catch_key        
 
 
         #  @id = db.execute('SELECT id FROM users WHERE username LIKE ?', username).first['id']

@@ -1,3 +1,13 @@
 <head><%= @username %></head>
 
-<p><%= @key.each do |k,v| p v.first end%></p>
+
+
+<p><% @catches.each do |fish,catches|  %></p>
+    
+    <h1><%=fish%></h1>
+        <p>Största:</p>
+        <p><%=catches.first['weight']%> kg</p>
+        <p><%=catches.first['location']%></p>
+        <p><%=catches.first['time']%></p>    
+
+<%end%>
