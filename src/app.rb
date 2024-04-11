@@ -1,6 +1,15 @@
 require "debug"
 class App < Sinatra::Base
 
+    enable :sessions
+
+
+    helpers do
+        def h(text)
+            Rack::Utils.escape_html(text)
+        end
+    end
+
     def db
         if @db == nil
             @db = SQLite3::Database.new('./db/db.sqlite')
@@ -10,8 +19,10 @@ class App < Sinatra::Base
     end
 
     get '/' do
-        @people = db.execute('SELECT firstname, lastname, id FROM users')
-        p @people[0]['firstname']
+
+        p session[:userid]
+        @people = db.execute('SELECT username, id FROM users')
+        p @people[0]['username']
         erb :index
     end
 
@@ -23,52 +34,75 @@ class App < Sinatra::Base
         erb :login
     end
 
-    get '/registeracc'
+    get '/regacc' do
         erb :regacc
     end
     get '/profile/:username' do |username|
          @username = username
-         p @username
-
+         
+        id = db.execute('SELECT id FROM users WHERE username = ?', @username)
         @ordered_catch = db.execute('SELECT * FROM catch 
         INNER JOIN fish
         ON catch.fishid = fish.id
-        WHERE userid = 1
-        ORDER BY weight DESC')
+        WHERE userid = ?
+        ORDER BY weight DESC', id)
         @catches = @ordered_catch.group_by {|x| x["type"]}
         @catch_key = @catches.keys  
         p @catch_key        
-
-
-        #  @id = db.execute('SELECT id FROM users WHERE username LIKE ?', username).first['id']
-    
-        #  @orderedfish = db.execute('SELECT * FROM catch ORDER BY weight DESC')
-        
-       
-       
-       
-       
-       
-        # # @topfish = db.execute('WITH RankedFish AS (
-        # #     SELECT *,
-        # #         ROW_NUMBER() OVER (PARTITION BY fishid ORDER BY weight DESC) AS row_num
-        # #     FROM catch
-        # #     WHERE userid = ?
-        # #     )
-        # #     SELECT * FROM RankedFish WHERE row_num = 1;', @id
-        # # )
-        
-        
-        
-        
-        p "wut"
-        "wat"
         erb :profile
     end
 
+    get '/login' do
+
+
+        erb :login
+    end
+
+    post '/regacc' do 
+        username = params['username']
+        cleartext_password = params['password'] 
+        password_check = params['password2']
+        role = "user"
+
+        if cleartext_password != password_check
+            redirect '/regacc'
+        end
+        hashed_password = BCrypt::Password.create(cleartext_password)
+        
+        query = 'INSERT INTO users(username, hashed_password, role) VALUES (?,?,?) RETURNING id'
+        result = db.execute(query, username, hashed_password, role).first
+        session[:userid] = result['id']
+        session[:role] = user
+        redirect '/'
+
+
+    end
+
+    post '/login' do
+
+        username = params['userlogin']
+        clear_passw = params['passwordlogin']
+        user = db.execute('SELECT * FROM users WHERE username = ?', username).first
+        
+
+        password_from_db = BCrypt::Password.new(user['hashed_password'])
+
+        if password_from_db == clear_passw
+            session[:userid] = user['id'] 
+            session[:role] = user['role']
+        else 
+            redirect '/login'
+        end
+        
+        redirect'/'
+
+
+
+    end
+    
+
     post '/register' do
-        @loggedin = 1
-        userid = @loggedin
+        userid = session[:userid]
         
         type = params['type']
         weight = params['weight']
@@ -79,6 +113,12 @@ class App < Sinatra::Base
         query = 'INSERT INTO catch (userid, weight, location, time, fishid) VALUES (?, ?, ?, ?, ?) RETURNING id'
         result = db.execute(query, userid, weight, location, time, fishid).first
         redirect '/'
+
+    end
+
+    post '/logout' do
+        session.destroy
+        redirect'/'
 
     end
 

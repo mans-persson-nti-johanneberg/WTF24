@@ -1,5 +1,14 @@
 
 <ul>
+<%if session[:userid]%>
+
+    <form action="/logout" method="POST">
+        <button type="submit">Logga ut</button>
+    </form>
+    
+<%else%>
+    <a href="/login">Logga in</a>
+<%end%>
 <%@people.each do |person| %>
     <li><%= person['username']%></li>
    
