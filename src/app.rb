@@ -38,17 +38,20 @@ class App < Sinatra::Base
         erb :regacc
     end
     get '/profile/:username' do |username|
-         @username = username
          
-        id = db.execute('SELECT id FROM users WHERE username = ?', @username)
+        id = db.execute('SELECT id FROM users WHERE username = ?', username).first['id']
+        
         @ordered_catch = db.execute('SELECT * FROM catch 
         INNER JOIN fish
         ON catch.fishid = fish.id
         WHERE userid = ?
         ORDER BY weight DESC', id)
+        p @ordered_catch
         @catches = @ordered_catch.group_by {|x| x["type"]}
+        p @catches
         @catch_key = @catches.keys  
-        p @catch_key        
+        p @catch_key
+               
         erb :profile
     end
 

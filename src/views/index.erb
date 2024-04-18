@@ -10,7 +10,8 @@
     <a href="/login">Logga in</a>
 <%end%>
 <%@people.each do |person| %>
-    <li><%= person['username']%></li>
+    <%curr = person['username']%>
+    <li><a href="/profile/<%= curr %>"><%= curr%></a></li>
    
 
 <%end%>
