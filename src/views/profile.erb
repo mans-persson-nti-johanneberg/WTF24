@@ -10,4 +10,14 @@
         <p><%=catches.first['location']%></p>
         <p><%=catches.first['time']%></p>    
 
+
+    
 <%end%>
+
+<%if session[:userid] != @id%>
+        <form action="/comment" method="POST">
+        <input type="text"name="comment" placeholder="Kommentera">
+        <button type="submit">Skicka</button>
+        
+        </form>
+    <%end%>

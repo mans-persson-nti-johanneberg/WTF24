@@ -39,13 +39,13 @@ class App < Sinatra::Base
     end
     get '/profile/:username' do |username|
          
-        id = db.execute('SELECT id FROM users WHERE username = ?', username).first['id']
+        @id = db.execute('SELECT id FROM users WHERE username = ?', username).first['id']
         
         @ordered_catch = db.execute('SELECT * FROM catch 
         INNER JOIN fish
         ON catch.fishid = fish.id
         WHERE userid = ?
-        ORDER BY weight DESC', id)
+        ORDER BY weight DESC', @id)
         p @ordered_catch
         @catches = @ordered_catch.group_by {|x| x["type"]}
         p @catches
@@ -60,6 +60,22 @@ class App < Sinatra::Base
 
         erb :login
     end
+
+    post '/comment' do
+
+        comment = params[comment]
+        userid = @id
+        commenter = db.execute('SELECT username FROM users WHERE id = ?', userid)
+        comment_time = Time.now
+        time_string = "#{comment_time.year}-#{comment_time.month}-#{comment_time.day}"
+
+        
+        query = 'INSERT INTO comments (userid, comment, time_string, commenter) VALUES (?, ?, ?, ?) RETURNING id'
+        result = db.execute(userid, comment, comment, time_string, commenter).first
+        redirect '/'
+
+    end
+
 
     post '/regacc' do 
         username = params['username']
