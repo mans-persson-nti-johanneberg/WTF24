@@ -62,17 +62,23 @@ class App < Sinatra::Base
     end
 
     post '/comment' do
+        p @id
+        if session[:userid]
 
-        comment = params[comment]
-        userid = @id
-        commenter = db.execute('SELECT username FROM users WHERE id = ?', userid)
-        comment_time = Time.now
-        time_string = "#{comment_time.year}-#{comment_time.month}-#{comment_time.day}"
+            comment = params[comment]
+            userid = @id
+            commenter = db.execute('SELECT username FROM users WHERE id = ?', userid)
+            comment_time = Time.now
+            time_string = "#{comment_time.year}-#{comment_time.month}-#{comment_time.day}"
 
-        
-        query = 'INSERT INTO comments (userid, comment, time_string, commenter) VALUES (?, ?, ?, ?) RETURNING id'
-        result = db.execute(userid, comment, comment, time_string, commenter).first
-        redirect '/'
+            
+            query = 'INSERT INTO comments (userid, comment, time_string, commenter) VALUES (?, ?, ?, ?) RETURNING id'
+            result = db.execute(userid, comment, comment, time_string, commenter).first
+            redirect '/'
+
+        end
+
+
 
     end
 
