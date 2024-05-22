@@ -1,3 +1,9 @@
+
+<%if session[:userid] == nil %>
+            <%redirect '/'%>
+
+<%end%>
+
 <h1>Registrera ny fångst</h1>
 
 <form action="/register" method = "POST">

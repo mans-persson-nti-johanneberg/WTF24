@@ -5,6 +5,19 @@
 <p><% @catches.each do |fish,catches|  %></p>
     
     <h1><%=fish%></h1>
+    <%if session[:userid] == @id%>
+
+        <form action="/edit/<%=@id%>" method="POST">
+            <button type="submit">Ändra</button>
+        </form>
+
+        <form action="/delete/<%=@id%>" method="POST">
+            <button type="submit">Ta bort</button>
+        </form>
+
+    <%end%>
+
+
         <p>Största:</p>
         <p><%=catches.first['weight']%> kg</p>
         <p><%=catches.first['location']%></p>
@@ -21,3 +34,5 @@
         
         </form>
     <%end%>
+
+

@@ -27,6 +27,7 @@ class App < Sinatra::Base
     end
 
     get '/register' do
+        p session[:userid]
         erb :register
     end
 
@@ -60,6 +61,14 @@ class App < Sinatra::Base
 
         erb :login
     end
+
+    post '/delete/:id' do |id|
+
+        
+
+    end
+
+    post '/edit'
 
     post '/comment' do
         p @id

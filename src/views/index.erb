@@ -9,6 +9,13 @@
 <%else%>
     <a href="/login">Logga in</a>
 <%end%>
+
+<% if session[:userid] != nil   %>
+
+    <a href="/register">Registrera</a>
+ 
+<%end %>
+
 <%@people.each do |person| %>
     <%curr = person['username']%>
     <li><a href="/profile/<%= curr %>"><%= curr%></a></li>
