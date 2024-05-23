@@ -5,34 +5,48 @@
 <p><% @catches.each do |fish,catches|  %></p>
     
     <h1><%=fish%></h1>
-    <%if session[:userid] == @id%>
+    
 
-        <form action="/edit/<%=@id%>" method="POST">
-            <button type="submit">Ändra</button>
-        </form>
-
-        <form action="/delete/<%=@id%>" method="POST">
-            <button type="submit">Ta bort</button>
-        </form>
-
-    <%end%>
-
-
-        <p>Största:</p>
-        <p><%=catches.first['weight']%> kg</p>
-        <p><%=catches.first['location']%></p>
-        <p><%=catches.first['time']%></p>    
+    <p>Största:</p>
+    <p><%=catches.first['weight']%> kg</p>
+    <p><%=catches.first['location']%></p>
+    <p><%=catches.first['time']%></p>    
 
 
     
 <%end%>
 
-<%if session[:userid] != @id%>
-        <form action="/comment" method="POST">
-        <input type="text"name="comment" placeholder="Kommentera">
-        <button type="submit">Skicka</button>
-        
+<%if session[:userid] != @profileid%>
+    <form action="/comment" method="POST">
+    <input type="text"name="comment" placeholder="Kommentera">
+    <input type="hidden" name="commentedid" value="<%=@profileid%>">
+    <button type="submit">Skicka</button>
+    
+    </form>
+   
+       
+<%end%>
+
+<%if session[:userid] == @profileid || session[:role] == "admin"%>
+     <form action="/editacc/<%=@profileid%>" method="POST">
+            <input type="text" name="userlogin" placeholder="Användarnamn" value = <%=@username%>>
+            <button type="submit">Ändra</button>
         </form>
-    <%end%>
+
+        <form action="/delete/<%=@profileid%>" method="POST">
+            <button type="submit">Ta bort</button>
+        </form>
+<%end%>
+
+
+
+<%p "KOMMENTARERERRE"%>
+<%p @comments%>
+<%@comments.each do |commenter, time, text|%>
+    <h1><%=commenter%></h1>
+    <p><%=time%></p>
+    <p><%=text%></p>
+<%end%>
+
 
 

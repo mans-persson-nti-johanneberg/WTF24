@@ -27,8 +27,11 @@ class App < Sinatra::Base
     end
 
     get '/register' do
-        p session[:userid]
-        erb :register
+        if session[:userid]
+            erb :register
+        else
+            redirect '/'
+        end
     end
 
     get '/login' do
@@ -40,19 +43,21 @@ class App < Sinatra::Base
     end
     get '/profile/:username' do |username|
          
-        @id = db.execute('SELECT id FROM users WHERE username = ?', username).first['id']
-        
+        @profileid = db.execute('SELECT id FROM users WHERE username = ?', username).first['id']
+        p "PROFILEID"
+        p @profileid
+        @username = username
         @ordered_catch = db.execute('SELECT * FROM catch 
         INNER JOIN fish
         ON catch.fishid = fish.id
         WHERE userid = ?
-        ORDER BY weight DESC', @id)
+        ORDER BY weight DESC', @profileid)
         p @ordered_catch
         @catches = @ordered_catch.group_by {|x| x["type"]}
         p @catches
         @catch_key = @catches.keys  
         p @catch_key
-               
+        @comments = db.execute('SELECT * FROM comments WHERE commentedid = ?', @profileid)
         erb :profile
     end
 
@@ -62,32 +67,45 @@ class App < Sinatra::Base
         erb :login
     end
 
+   
+
     post '/delete/:id' do |id|
-
-        
-
+        db.execute('DELETE FROM users WHERE id = ?', id)
+        db.execute('DELETE FROM comments WHERE commenterid = ?', id)
+        db.execute('DELETE FROM catch WHERE userid = ?', id)
+        redirect '/'
     end
 
-    post '/edit'
+    post '/editacc/:id' do |id|
+        p id
+        p params
+        newname = params['userlogin']
+        db.execute('UPDATE users SET username = ? WHERE id = ?', newname, id)
+        redirect '/'
+    end
 
-    post '/comment' do
-        p @id
-        if session[:userid]
-
-            comment = params[comment]
-            userid = @id
-            commenter = db.execute('SELECT username FROM users WHERE id = ?', userid)
+    post '/comment' do 
+        p "userid:"
+        p session[:userid]
+        if session[:userid] != nil
+          
+            @commenterid = session[:userid]
+            comment = params['comment']
+            @commentedid = params['commentedid']
+            commenter = db.execute('SELECT username FROM users WHERE id = ?', @commenterid).first['username']
             comment_time = Time.now
             time_string = "#{comment_time.year}-#{comment_time.month}-#{comment_time.day}"
-
+            p  @commenterid, comment, time_string, commenter, @commentedid
             
-            query = 'INSERT INTO comments (userid, comment, time_string, commenter) VALUES (?, ?, ?, ?) RETURNING id'
-            result = db.execute(userid, comment, comment, time_string, commenter).first
-            redirect '/'
+            query = 'INSERT INTO comments 
+            (commenterid, comment, time_string, commenter, commentedid)
+            VALUES (?, ?, ?, ?, ?) RETURNING id'
+            result = db.execute(query, @commenterid, comment, time_string, commenter, @commentedid).first
+            
 
         end
-
-
+        redirect '/'
+        
 
     end
 
@@ -106,7 +124,7 @@ class App < Sinatra::Base
         query = 'INSERT INTO users(username, hashed_password, role) VALUES (?,?,?) RETURNING id'
         result = db.execute(query, username, hashed_password, role).first
         session[:userid] = result['id']
-        session[:role] = user
+        session[:role] = result['role']
         redirect '/'
 
 
@@ -116,6 +134,7 @@ class App < Sinatra::Base
 
         username = params['userlogin']
         clear_passw = params['passwordlogin']
+
         user = db.execute('SELECT * FROM users WHERE username = ?', username).first
         
 
